@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOUND_DATA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #000;
+    --border: #191919;
+    --text: #888;
+    --text-dim: #3a3a3a;
+    --text-bright: #ccc;
+    --white: #fff;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+
+  html { font-size: 12px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-weight: 300;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: #fff; color: #000; }
+
+  /* LAYOUT */
+  .shell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+
+  .col { border-right: 1px solid var(--border); }
+  .col:last-child { border-right: none; }
+
+  .block {
+    border-bottom: 1px solid var(--border);
+    padding: 1.6rem 2rem;
+  }
+
+  .label {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+
+  /* HEADER */
+  .hdr {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--border);
+    padding: 1.4rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .hdr h1 {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .hdr-right {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* INPUT */
+  .input-row {
+    display: flex;
+    gap: 0;
+  }
+
+  .input-field {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-right: none;
+    color: var(--white);
+    font-family: var(--mono);
+    font-weight: 300;
+    font-size: 0.95rem;
+    padding: 0.9rem 1rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .input-field::placeholder { color: var(--text-dim); }
+  .input-field:focus { border-color: #444; }
+
+  .btn {
+    background: var(--white);
+    color: #000;
+    border: 1px solid var(--white);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 2rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover { opacity: 0.8; }
+  .btn:disabled { opacity: 0.15; cursor: default; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: #444; color: var(--text-bright); }
+
+  /* CONTROLS */
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem;
+  }
+
+  .ctrl-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .ctrl-val { color: var(--text-bright); }
+
+  /* MODE */
+  .mode-row { display: flex; }
+
+  .mode-opt {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.55rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .mode-opt + .mode-opt { border-left: none; }
+
+  .mode-opt.on {
+    background: var(--white);
+    color: #000;
+    border-color: var(--white);
+  }
+
+  /* RANGE */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    outline: none;
+    margin-top: 0.4rem;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 8px;
+    height: 8px;
+    background: var(--white);
+    cursor: pointer;
+    border: none;
+    border-radius: 0;
+  }
+
+  /* SELECT */
+  .sel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 0.5rem;
+    outline: none;
+    width: 100%;
+  }
+
+  .sel:focus { border-color: #444; }
+
+  /* EQ */
+  .eq {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .eq-col-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+  }
+
+  .eq-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 48px;
+    margin-bottom: 0.4rem;
+  }
+
+  .eq-bar {
+    flex: 1;
+    background: var(--text-dim);
+    min-height: 2px;
+    transition: height 0.5s ease;
+  }
+
+  .eq-bar.on { background: var(--white); }
+
+  .eq-hz {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+
+  .eq-desc {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* LOG */
+  .log {
+    background: transparent;
+    min-height: 140px;
+    max-height: 260px;
+    overflow-y: auto;
+    font-size: 0.75rem;
+    line-height: 1.8;
+  }
+
+  .log::-webkit-scrollbar { width: 2px; }
+  .log::-webkit-scrollbar-track { background: transparent; }
+  .log::-webkit-scrollbar-thumb { background: var(--text-dim); }
+
+  .log-ln {
+    opacity: 0;
+    animation: fadein 0.25s ease forwards;
+  }
+
+  .log-ln .ts { color: var(--text-dim); margin-right: 0.4rem; }
+  .log-ln.err { color: var(--white); }
+
+  @keyframes fadein { to { opacity: 1; } }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 5px;
+    height: 11px;
+    background: var(--white);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* RESULTS */
+  .res-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    margin-bottom: 1.2rem;
+  }
+
+  .res-cell {
+    padding: 1rem 1.2rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .res-cell:last-child { border-right: none; }
+
+  .res-cell-lbl {
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+  }
+
+  .res-cell-val {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--white);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* WEIGHT BAR */
+  .wt-bar {
+    height: 2px;
+    background: var(--border);
+    display: flex;
+    margin-bottom: 0.3rem;
+  }
+
+  .wt-base { background: var(--white); transition: width 0.5s ease; }
+  .wt-trend { background: var(--text-dim); transition: width 0.5s ease; }
+
+  .wt-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+  }
+
+  /* PLAYER */
+  .player {
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+  }
+
+  .player-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn-play {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-play:hover { border-color: var(--white); color: var(--white); }
+  .btn-play svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .player-title {
+    font-size: 0.75rem;
+    color: var(--text-bright);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .player-meta {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .wave-wrap {
+    height: 40px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .wave-canvas { width: 100%; height: 100%; display: block; }
+
+  .wave-prog {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.06);
+    border-right: 1px solid var(--white);
+    pointer-events: none;
+    transition: width 0.1s linear;
+  }
+
+  .player-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }
+
+  /* TRENDS */
+  .trends-list { border: 1px solid var(--border); }
+
+  .tr-item {
+    padding: 0.55rem 1rem;
+    display: grid;
+    grid-template-columns: 1.2rem 1fr auto;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .tr-item:last-child { border-bottom: none; }
+  .tr-item:hover { background: #0a0a0a; }
+
+  .tr-rank { color: var(--text-dim); font-size: 0.6rem; text-align: right; }
+  .tr-kw { color: var(--text-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tr-vol { color: var(--text-dim); font-size: 0.6rem; }
+
+  /* LIVE BAR */
+  .live-bar {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 2rem;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .live-bar.on { display: flex; }
+
+  .live-bar .dot {
+    width: 4px; height: 4px;
+    background: var(--white);
+    border-radius: 50%;
+    animation: blink 1.5s ease infinite;
+  }
+
+  .live-bar .btn-ghost { margin-left: auto; padding: 0.2rem 0.8rem; font-size: 0.6rem; }
+
+  /* LAYERS */
+  .layers { display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--border); }
+
+  .layer-row {
+    display: grid;
+    grid-template-columns: 1.2rem 1fr auto auto;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .layer-row:last-child { border-bottom: none; }
+
+  .layer-idx { color: var(--text-dim); font-size: 0.6rem; text-align: right; }
+  .layer-kw { color: var(--text-bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .layer-traffic { color: var(--text-dim); font-size: 0.6rem; }
+
+  .layer-wt {
+    font-size: 0.65rem;
+    color: var(--white);
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .layer-wt-bar {
+    height: 2px;
+    background: var(--white);
+    margin-top: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .layer-empty { padding: 0.8rem 1rem; color: var(--text-dim); font-size: 0.75rem; }
+
+  /* HISTORY */
+  .history { display: flex; flex-direction: column; gap: 0; }
+
+  .run-entry {
+    border: 1px solid var(--border);
+    margin-bottom: 0.8rem;
+    animation: fadein 0.3s ease forwards;
+  }
+
+  .run-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.7rem;
+  }
+
+  .run-idx {
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    min-width: 1.5rem;
+  }
+
+  .run-input {
+    color: var(--white);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .run-time { color: var(--text-dim); font-size: 0.6rem; }
+
+  .run-layers { padding: 0; }
+
+  .run-play-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .run-play-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .run-play-btn:hover { border-color: var(--white); color: var(--white); }
+  .run-play-btn.playing { border-color: var(--white); color: var(--white); }
+  .run-play-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+  .run-wave {
+    flex: 1;
+    height: 24px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .run-wave canvas { width: 100%; height: 100%; display: block; }
+
+  .run-wave-prog {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: rgba(255,255,255,0.06);
+    border-right: 1px solid var(--white);
+    pointer-events: none;
+  }
+
+  .run-time-row {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .run-wt-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.3rem 1rem 0.5rem;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+  }
+
+  .run-wt-bar {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    display: flex;
+  }
+
+  .run-wt-base { background: var(--white); }
+  .run-wt-trend { background: var(--text-dim); }
+
+  /* RUNNING */
+  .running .btn { opacity: 0.4; }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .hdr, .live-bar { grid-column: 1; }
+    .col { border-right: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="hdr">
+    <h1>sound_data</h1>
+    <span class="hdr-right">trend distortion pipeline</span>
+  </div>
+
+  <div class="live-bar" id="liveBar">
+    <span class="dot"></span>
+    <span id="liveBarText">live</span>
+    <button class="btn-ghost" onclick="stopLive()">stop</button>
+  </div>
+
+  <!-- LEFT -->
+  <div class="col">
+
+    <div class="block">
+      <div class="label">Input</div>
+      <div class="input-row">
+        <input type="text" class="input-field" id="inputField"
+               placeholder="song title or youtube url" spellcheck="false">
+        <button class="btn" id="runBtn" onclick="runPipeline()">Run</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="label">Parameters</div>
+      <div class="controls">
+        <div>
+          <div class="ctrl-label">Mode</div>
+          <div class="mode-row">
+            <button class="mode-opt on" data-mode="once" onclick="setMode('once')">Once</button>
+            <button class="mode-opt" data-mode="live" onclick="setMode('live')">Live</button>
+          </div>
+        </div>
+        <div>
+          <div class="ctrl-label">Sample rate</div>
+          <select class="sel" id="sampleRate">
+            <option value="22050">22050 Hz</option>
+            <option value="44100" selected>44100 Hz</option>
+            <option value="48000">48000 Hz</option>
+          </select>
+        </div>
+        <div>
+          <div class="ctrl-label">Duration <span class="ctrl-val" id="durVal">30s</span></div>
+          <input type="range" id="duration" min="10" max="180" value="30"
+                 oninput="document.getElementById('durVal').textContent=this.value+'s'">
+        </div>
+        <div>
+          <div class="ctrl-label">Trend weight <span class="ctrl-val" id="wtVal">auto</span></div>
+          <input type="range" id="trendWeight" min="0" max="100" value="-1"
+                 oninput="updWt(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="label">EQ topology</div>
+      <div class="eq">
+        <div>
+          <div class="eq-col-label">Base / personal</div>
+          <div class="eq-bars" id="eqBase"></div>
+          <div class="eq-hz"><span>20</span><span>300</span><span>1k</span><span>4k</span><span>16k</span></div>
+          <div class="eq-desc">highpass 300 Hz</div>
+        </div>
+        <div>
+          <div class="eq-col-label">Trend / external</div>
+          <div class="eq-bars" id="eqTrend"></div>
+          <div class="eq-hz"><span>20</span><span>300</span><span>1k</span><span>4k</span><span>16k</span></div>
+          <div class="eq-desc">lowpass 4000 Hz</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block" style="flex:1">
+      <div class="label">Log</div>
+      <div class="log" id="logBox">
+        <div class="log-ln"><span class="ts">[--:--:--]</span> awaiting input</div>
+        <span class="cursor-blink"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col">
+
+    <div class="block">
+      <div class="label">Trending now</div>
+      <div class="trends-list" id="trendsList">
+        <div class="tr-item"><span class="tr-rank"></span><span class="tr-kw" style="color:var(--text-dim)">loading</span><span class="tr-vol"></span></div>
+      </div>
+    </div>
+
+    <div class="block" style="flex:1;overflow-y:auto;max-height:calc(100vh - 320px)">
+      <div class="label">Output history</div>
+      <div id="historyContainer" class="history">
+        <div class="layer-empty">no runs yet</div>
+      </div>
+      <audio id="audioEl" preload="auto"></audio>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let mode='once',running=false,runCount=0,currentPlayId=null;
+const audioEl=document.getElementById('audioEl');
+const logBox=document.getElementById('logBox');
+const historyEl=document.getElementById('historyContainer');
+
+// SSE
+const sse=new EventSource('/api/events');
+sse.addEventListener('log',e=>{const{message}=JSON.parse(e.data);addLog(message)});
+sse.addEventListener('status',async e=>{
+  const{stage,message}=JSON.parse(e.data);
+  if(stage==='done'){
+    setRun(false);addLog('done — fetching result...');
+    try{
+      const r=await fetch('/api/last-result');
+      addLog('fetch status: '+r.status);
+      if(r.ok){
+        const d=await r.json();
+        addLog('got result: '+d.outputUrl+' trends:'+d.trends?.length);
+        addRunEntry(d);
+        addLog('entry added to history');
+      }else{addLog('ERR: fetch failed '+r.status,'err')}
+    }catch(err){addLog('ERR: '+err.message,'err')}
+  }
+  else if(stage==='error'){addLog('ERR: '+message,'err');setRun(false)}
+  else if(stage==='live-start'){document.getElementById('liveBar').classList.add('on')}
+  else if(stage==='live-stop'){document.getElementById('liveBar').classList.remove('on');setRun(false)}
+});
+
+function setMode(m){mode=m;document.querySelectorAll('.mode-opt').forEach(b=>b.classList.toggle('on',b.dataset.mode===m))}
+function updWt(v){document.getElementById('wtVal').textContent=parseInt(v)<0?'auto':(v/100).toFixed(2)}
+
+async function runPipeline(){
+  const input=document.getElementById('inputField').value.trim();
+  if(!input||running)return;
+  setRun(true);clearLog();addLog('starting pipeline...');
+  const dur=parseInt(document.getElementById('duration').value);
+  const sr=parseInt(document.getElementById('sampleRate').value);
+  const wr=parseInt(document.getElementById('trendWeight').value);
+  const tw=wr<0?undefined:wr/100;
+  if(mode==='once'){
+    try{
+      const r=await fetch('/api/mix/once',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input,duration:dur,sampleRate:sr,trendWeight:tw})});
+      const d=await r.json();if(!r.ok)throw new Error(d.error);
+    }catch(e){addLog('ERR: '+e.message,'err');setRun(false)}
+  }else{
+    try{
+      const r=await fetch('/api/mix/live/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input,duration:dur,sampleRate:sr,interval:60})});
+      const d=await r.json();if(!r.ok)throw new Error(d.error);
+    }catch(e){addLog('ERR: '+e.message,'err');setRun(false)}
+  }
+}
+
+async function stopLive(){
+  await fetch('/api/mix/live/stop',{method:'POST'});
+  document.getElementById('liveBar').classList.remove('on');setRun(false);
+}
+
+function setRun(s){
+  running=s;document.body.classList.toggle('running',s);
+  document.getElementById('runBtn').disabled=s;
+  document.getElementById('runBtn').textContent=s?'...':'Run';
+}
+
+// ── HISTORY ──
+const runUrls={};
+
+function addRunEntry(d){
+  try{ _addRunEntry(d) }catch(err){ console.error('addRunEntry error:',err); addLog('UI ERR: '+err.message,'err') }
+}
+function _addRunEntry(d){
+  runCount++;
+  const empty=historyEl.querySelector('.layer-empty');
+  if(empty)empty.remove();
+
+  const id='run-'+runCount;
+  const url=d.outputUrl||'';
+  runUrls[id]=url;
+
+  const entry=document.createElement('div');
+  entry.className='run-entry';
+  entry.id=id;
+
+  const now=new Date();
+  const timeStr=[now.getHours(),now.getMinutes(),now.getSeconds()].map(n=>n.toString().padStart(2,'0')).join(':');
+
+  // Header
+  const hdr=document.createElement('div');hdr.className='run-header';
+  hdr.innerHTML=`<span class="run-idx">#${runCount.toString().padStart(2,'0')}</span><span class="run-input">${esc(d.input||'--')}</span><span class="run-time">${timeStr}</span>`;
+  entry.appendChild(hdr);
+
+  // Trend layers
+  if(d.trends&&d.trends.length){
+    const layersDiv=document.createElement('div');layersDiv.className='run-layers';
+    const maxW=Math.max(...d.trends.map(t=>t.weight));
+    d.trends.forEach((t,i)=>{
+      const row=document.createElement('div');row.className='layer-row';
+      const barPct=maxW>0?Math.round((t.weight/maxW)*100):0;
+      row.innerHTML=`<span class="layer-idx">${i+1}</span><span class="layer-kw"></span><span class="layer-traffic"></span><div class="layer-wt">${t.weight.toFixed(2)}<div class="layer-wt-bar" style="width:${barPct}%"></div></div>`;
+      row.querySelector('.layer-kw').textContent=t.keyword;
+      row.querySelector('.layer-traffic').textContent=t.traffic;
+      layersDiv.appendChild(row);
+    });
+    entry.appendChild(layersDiv);
+  }
+
+  // Weight bar
+  const tw=d.totalWeight!=null?Math.min(d.totalWeight,1):0.5;
+  const basePct=Math.round((1-tw)*100);
+  const trendPct=Math.round(tw*100);
+  const wtRow=document.createElement('div');wtRow.className='run-wt-row';
+  wtRow.innerHTML=`<span>base ${basePct}%</span><div class="run-wt-bar"><div class="run-wt-base" style="width:${basePct}%"></div><div class="run-wt-trend" style="width:${trendPct}%"></div></div><span>${trendPct}% trend</span>`;
+  entry.appendChild(wtRow);
+
+  // Player row
+  const playRow=document.createElement('div');playRow.className='run-play-row';
+
+  const playBtn=document.createElement('button');
+  playBtn.className='run-play-btn';
+  playBtn.dataset.id=id;
+  playBtn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>';
+  playBtn.addEventListener('click',()=>toggleRunPlay(playBtn));
+  playRow.appendChild(playBtn);
+
+  const waveDiv=document.createElement('div');waveDiv.className='run-wave';
+  waveDiv.addEventListener('click',e=>seekRunAudio(e,id));
+  const cvs=document.createElement('canvas');cvs.className='wave-canvas';cvs.id='cvs-'+id;
+  const prog=document.createElement('div');prog.className='run-wave-prog';prog.id='prog-'+id;
+  waveDiv.appendChild(cvs);waveDiv.appendChild(prog);
+  playRow.appendChild(waveDiv);
+
+  const timeDiv=document.createElement('div');timeDiv.className='run-time-row';
+  timeDiv.innerHTML=`<span id="time-${id}">0:00</span>`;
+  playRow.appendChild(timeDiv);
+
+  entry.appendChild(playRow);
+
+  historyEl.insertBefore(entry,historyEl.firstChild);
+  requestAnimationFrame(()=>drawMiniWave('cvs-'+id));
+}
+
+function toggleRunPlay(btn){
+  const id=btn.dataset.id;
+  const url=runUrls[id];
+  if(!url)return;
+
+  // If clicking same entry that's playing, pause
+  if(currentPlayId===id&&!audioEl.paused){
+    audioEl.pause();
+    btn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>';
+    btn.classList.remove('playing');
+    return;
+  }
+
+  // Stop previous
+  if(currentPlayId&&currentPlayId!==id){
+    const prevBtn=document.querySelector(`[data-id="${currentPlayId}"].run-play-btn`);
+    if(prevBtn){prevBtn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>';prevBtn.classList.remove('playing')}
+  }
+
+  currentPlayId=id;
+  audioEl.src=url+'?t='+Date.now();
+  audioEl.play();
+  btn.innerHTML='<svg viewBox="0 0 24 24"><rect x="5" y="3" width="4" height="18"/><rect x="15" y="3" width="4" height="18"/></svg>';
+  btn.classList.add('playing');
+}
+
+audioEl.addEventListener('timeupdate',()=>{
+  if(!audioEl.duration||!currentPlayId)return;
+  const pct=(audioEl.currentTime/audioEl.duration*100);
+  const prog=document.getElementById('prog-'+currentPlayId);
+  const time=document.getElementById('time-'+currentPlayId);
+  if(prog)prog.style.width=pct+'%';
+  if(time)time.textContent=fmtTime(audioEl.currentTime)+' / '+fmtTime(audioEl.duration);
+});
+
+audioEl.addEventListener('ended',()=>{
+  if(!currentPlayId)return;
+  const btn=document.querySelector(`[data-id="${currentPlayId}"].run-play-btn`);
+  if(btn){btn.innerHTML='<svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg>';btn.classList.remove('playing')}
+  const prog=document.getElementById('prog-'+currentPlayId);
+  if(prog)prog.style.width='0%';
+  currentPlayId=null;
+});
+
+function seekRunAudio(e,id){
+  if(currentPlayId!==id||!audioEl.duration)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  audioEl.currentTime=(e.clientX-r.left)/r.width*audioEl.duration;
+}
+
+function drawMiniWave(canvasId){
+  const c=document.getElementById(canvasId);if(!c)return;
+  const ctx=c.getContext('2d');
+  const dpr=devicePixelRatio||1,rect=c.getBoundingClientRect();
+  c.width=rect.width*dpr;c.height=rect.height*dpr;ctx.scale(dpr,dpr);
+  const w=rect.width,h=rect.height,mid=h/2,bars=Math.floor(w/2.5);
+  ctx.clearRect(0,0,w,h);
+  for(let i=0;i<bars;i++){
+    const t=i/bars;
+    const amp=(Math.sin(t*Math.PI)*0.5+Math.sin(t*7.3+runCount)*0.2+Math.sin(t*23.1)*0.15+Math.random()*0.04)*mid*0.8;
+    const bh=Math.max(1,Math.abs(amp));
+    ctx.fillStyle='rgba(255,255,255,0.2)';
+    ctx.fillRect(i*2.5,mid-bh,1.5,bh*2);
+  }
+}
+
+function fmtTime(s){if(!s||!isFinite(s))return'0:00';return Math.floor(s/60)+':'+Math.floor(s%60).toString().padStart(2,'0')}
+
+// ── LOG ──
+function addLog(t,cls=''){
+  const cur=logBox.querySelector('.cursor-blink');
+  const ln=document.createElement('div');
+  ln.className='log-ln'+(cls?' '+cls:'');
+  const now=new Date();
+  const ts=[now.getHours(),now.getMinutes(),now.getSeconds()].map(n=>n.toString().padStart(2,'0')).join(':');
+  ln.innerHTML=`<span class="ts">[${ts}]</span> ${esc(t)}`;
+  logBox.insertBefore(ln,cur);logBox.scrollTop=logBox.scrollHeight;
+}
+function clearLog(){const cur=logBox.querySelector('.cursor-blink');logBox.innerHTML='';logBox.appendChild(cur)}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+
+// ── EQ BARS ──
+function initEq(){
+  const n=24;
+  ['eqBase','eqTrend'].forEach((id,idx)=>{
+    const el=document.getElementById(id);
+    for(let i=0;i<n;i++){
+      const bar=document.createElement('div');bar.className='eq-bar';
+      const freq=20*Math.pow(800,i/(n-1));
+      const on=idx===0?freq>300:freq<4000;
+      if(on)bar.classList.add('on');
+      let h;
+      if(idx===0){h=freq<150?3:freq<300?4+(freq-150)/150*20:20+Math.random()*28}
+      else{h=freq>8000?3:freq>4000?4+(8000-freq)/4000*20:20+Math.random()*28}
+      bar.style.height=h+'px';
+      el.appendChild(bar);
+    }
+  });
+}
+
+function tickEq(){
+  document.querySelectorAll('.eq-bar.on').forEach(b=>{
+    const base=parseFloat(b.style.height);
+    b.style.height=Math.max(6,base+(Math.random()-0.5)*3)+'px';
+  });
+  requestAnimationFrame(tickEq);
+}
+
+async function loadTrends(){
+  try{
+    const r=await fetch('/api/trends');const d=await r.json();
+    const el=document.getElementById('trendsList');el.innerHTML='';
+    d.trends.forEach((t,i)=>{
+      const item=document.createElement('div');item.className='tr-item';
+      item.innerHTML=`<span class="tr-rank">${(i+1).toString().padStart(2,'0')}</span><span class="tr-kw">${esc(t.keyword)}</span><span class="tr-vol">${esc(t.traffic)}</span>`;
+      item.addEventListener('click',()=>{document.getElementById('inputField').value=t.keyword});
+      el.appendChild(item);
+    });
+  }catch(e){}
+}
+
+initEq();tickEq();loadTrends();
+setInterval(loadTrends,300000);
+document.getElementById('inputField').addEventListener('keydown',e=>{if(e.key==='Enter')runPipeline()});
+</script>
+
+</body>
+</html>

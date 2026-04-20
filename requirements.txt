@@ -1,0 +1,8 @@
+yt-dlp
+pytrends
+pydub
+librosa
+scipy
+numpy
+soundfile
+sounddevice
