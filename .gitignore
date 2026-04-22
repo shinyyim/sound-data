@@ -1,6 +1,5 @@
 node_modules/
 temp/
-output/
 .DS_Store
 .bkit/
 .claude/
