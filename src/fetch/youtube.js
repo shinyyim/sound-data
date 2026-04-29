@@ -29,9 +29,12 @@ export async function downloadAudio(query, outputName = 'audio', maxDuration = 1
     '--no-playlist',
     '--force-overwrites',
     '--no-warnings',
-    '--cookies-from-browser', 'chrome',
     '--print', 'after_move:title',
   ];
+
+  if (process.env.YT_USE_COOKIES) {
+    args.push('--cookies-from-browser', process.env.YT_USE_COOKIES);
+  }
 
   const TIMEOUT_MS = 60_000; // 60s timeout per download
 
